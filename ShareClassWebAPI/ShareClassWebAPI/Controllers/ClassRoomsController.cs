@@ -37,7 +37,7 @@ namespace ShareClassWebAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var list = await _context.DBClassRoom.ToListAsync();
+            var list = await _context.DBClassRoom.Include(i => i.HomeTask).ToListAsync();
             return Ok(list);
         }
 

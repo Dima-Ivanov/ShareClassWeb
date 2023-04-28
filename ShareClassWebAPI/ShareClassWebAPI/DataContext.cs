@@ -12,7 +12,17 @@ namespace ShareClassWebAPI
 {
     public class DataContext : DbContext
     {
-        public DataContext(DbContextOptions<DataContext> options) : base(options) {}
+        private readonly IConfiguration _configuration;
+
+        public DataContext(IConfiguration configuration)
+        {
+            this._configuration = configuration;
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder dbContextOptionsBuilder)
+        {
+            dbContextOptionsBuilder.UseSqlServer(this._configuration.GetConnectionString("DefaultConnection"));
+        }
 
         public virtual DbSet<ClassRoom> DBClassRoom { get; set; }
         public virtual DbSet<ClassRoomsUsers> DBClassRoomsUsers { get; set; }
