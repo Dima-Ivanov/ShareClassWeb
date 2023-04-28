@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 namespace ShareClassWebAPI.Entities
 {
     [Table("User")]
-    public class User : IEntity<User>
+    public class User : IdentityUser<int>, IEntity<User>
     {
         public User()
         {
@@ -18,10 +19,7 @@ namespace ShareClassWebAPI.Entities
             this.Reaction = new HashSet<Reaction>();
         }
 
-        [Key]
-        public int ID { get; set; }
         public string Login { get; set; }
-        public long Password_Hash { get; set; }
         public string Name { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
@@ -32,8 +30,9 @@ namespace ShareClassWebAPI.Entities
         public void CopyPropertiesWithoutId(User user)
         {
             user.Login = this.Login;
-            user.Password_Hash = this.Password_Hash;
+            user.PasswordHash = this.PasswordHash;
             user.Name = this.Name;
+            user.UserName = this.UserName;
         }
     }
 }

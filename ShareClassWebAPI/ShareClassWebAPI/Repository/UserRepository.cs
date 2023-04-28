@@ -25,7 +25,7 @@ namespace ShareClassWebAPI.Repository
 
         public async Task<User> GetItemAsync(int ID)
         {
-            return await dataContext.DBUser.FirstOrDefaultAsync(i => i.ID == ID);
+            return await dataContext.DBUser.FirstOrDefaultAsync(i => i.Id == ID);
         }
 
         public async Task CreateAsync(User user)
@@ -36,7 +36,7 @@ namespace ShareClassWebAPI.Repository
 
         public async Task UpdateAsync(User user)
         {
-            var itemToReplace = dataContext.DBUser.FirstOrDefault(i => i.ID == user.ID);
+            var itemToReplace = dataContext.DBUser.FirstOrDefault(i => i.Id == user.Id);
 
             if (itemToReplace != null)
             {
@@ -48,7 +48,7 @@ namespace ShareClassWebAPI.Repository
 
         public async Task<bool> DeleteAsync(int ID)
         {
-            var itemToDelete = dataContext.DBUser.FirstOrDefault(i => i.ID == ID);
+            var itemToDelete = dataContext.DBUser.FirstOrDefault(i => i.Id == ID);
 
             if (itemToDelete != null)
             {

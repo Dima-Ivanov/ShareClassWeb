@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ShareClassWebAPI.Entities;
 using ShareClassWebAPI.Interfaces;
 using ShareClassWebAPI.Repository;
@@ -10,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace ShareClassWebAPI
 {
-    public class DataContext : DbContext
+    public class DataContext : IdentityDbContext<User, IdentityRole<int>, int>
     {
         private readonly IConfiguration _configuration;
 
@@ -22,6 +24,11 @@ namespace ShareClassWebAPI
         protected override void OnConfiguring(DbContextOptionsBuilder dbContextOptionsBuilder)
         {
             dbContextOptionsBuilder.UseSqlServer(this._configuration.GetConnectionString("DefaultConnection"));
+        }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
         }
 
         public virtual DbSet<ClassRoom> DBClassRoom { get; set; }

@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import "./style.css";
 
-const ClassRoom = ({ classRooms, setClassRooms, removeClassRoom }) => {
+const ClassRoom = ({ user, classRooms, setClassRooms, removeClassRoom }) => {
   useEffect(() => {
     const getClassRooms = async () => {
-      return await fetch("https://localhost:7088/api/ClassRooms", {
+      return await fetch("api/ClassRooms", {
         method: "GET",
       })
         .then((response) => response.json())
@@ -26,10 +26,7 @@ const ClassRoom = ({ classRooms, setClassRooms, removeClassRoom }) => {
       method: "DELETE",
     };
 
-    return await fetch(
-      `https://localhost:7088/api/ClassRooms/${classRoomId}`,
-      requestOptions
-    ).then(
+    return await fetch(`api/ClassRooms/${classRoomId}`, requestOptions).then(
       (response) => {
         if (response.ok) {
           removeClassRoom(classRoomId);
@@ -57,7 +54,11 @@ const ClassRoom = ({ classRooms, setClassRooms, removeClassRoom }) => {
             {" "}
             <br />
             <strong className="ClassRoomName">{name} &emsp;</strong>
-            <button onClick={(e) => removeItem(id)}>Удалить</button>
+            {user.isAuthenticated ? (
+              <button onClick={() => removeItem(id)}>Удалить</button>
+            ) : (
+              ""
+            )}
             <br />
             <span>Пригласительный код: {invitationCode}</span> <br />
             <span>Описание: {description}</span> <br />
