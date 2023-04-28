@@ -5,11 +5,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ShareClassWebAPI.Interfaces;
 
 namespace ShareClassWebAPI.Entities
 {
     [Table("ClassRoom")]
-    public class ClassRoom
+    public class ClassRoom : IEntity<ClassRoom>
     {
         public ClassRoom()
         {
@@ -33,5 +34,15 @@ namespace ShareClassWebAPI.Entities
         public virtual ICollection<ClassRoomsUsers> ClassRoomsUsers { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<HomeTask> HomeTask { get; set; }
+
+        public void CopyPropertiesWithoutId(ClassRoom classRoom)
+        {
+            classRoom.Name = this.Name;
+            classRoom.InvitationCode = this.InvitationCode;
+            classRoom.Description = this.Description;
+            classRoom.Students_Count = this.Students_Count;
+            classRoom.Creation_Date = this.Creation_Date;
+            classRoom.Administrator_ID = this.Administrator_ID;
+        }
     }
 }

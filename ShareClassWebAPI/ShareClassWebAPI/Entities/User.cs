@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ShareClassWebAPI.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 namespace ShareClassWebAPI.Entities
 {
     [Table("User")]
-    public class User
+    public class User : IEntity<User>
     {
         public User()
         {
@@ -27,5 +28,12 @@ namespace ShareClassWebAPI.Entities
         public virtual ICollection<ClassRoomsUsers> ClassRoomsUsers { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Reaction> Reaction { get; set; }
+
+        public void CopyPropertiesWithoutId(User user)
+        {
+            user.Login = this.Login;
+            user.Password_Hash = this.Password_Hash;
+            user.Name = this.Name;
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using ShareClassWebAPI.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using ShareClassWebAPI.Entities;
 using ShareClassWebAPI.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -11,57 +12,51 @@ namespace ShareClassWebAPI.Repository
     public class HomeTaskFileRepository : IRepository<HomeTaskFile>
     {
         private DataContext dataContext;
-        private int maxID;
 
         public HomeTaskFileRepository(DataContext dataContext)
         {
             this.dataContext = dataContext;
-
-            var list = GetList();
-
-            maxID = 0;
-            foreach (var item in list)
-            {
-                maxID = Math.Max(maxID, item.ID);
-            }
         }
 
-        public List<HomeTaskFile> GetList()
+        public async Task<List<HomeTaskFile>> GetListAsync()
         {
-            return dataContext.DBHomeTaskFile.ToList();
+            return await dataContext.DBHomeTaskFile.ToListAsync();
         }
 
-        public HomeTaskFile GetItem(int ID)
+        public async Task<HomeTaskFile> GetItemAsync(int ID)
         {
-            return dataContext.DBHomeTaskFile.FirstOrDefault(i => i.ID == ID);
+            return await dataContext.DBHomeTaskFile.FirstOrDefaultAsync(i => i.ID == ID);
         }
 
-        public int Create(HomeTaskFile HomeTaskFile)
+        public async Task CreateAsync(HomeTaskFile homeTaskFile)
         {
-            HomeTaskFile.ID = ++maxID;
-            dataContext.DBHomeTaskFile.Add(HomeTaskFile);
-            return maxID;
+            await dataContext.DBHomeTaskFile.AddAsync(homeTaskFile);
+            await dataContext.SaveChangesAsync();
         }
 
-        public void Update(HomeTaskFile HomeTaskFile)
+        public async Task UpdateAsync(HomeTaskFile homeTaskFile)
         {
-            var itemToReplace = dataContext.DBHomeTaskFile.FirstOrDefault(i => i.ID == HomeTaskFile.ID);
+            var itemToReplace = dataContext.DBHomeTaskFile.FirstOrDefault(i => i.ID == homeTaskFile.ID);
 
             if (itemToReplace != null)
             {
-                itemToReplace = HomeTaskFile;
+                homeTaskFile.CopyPropertiesWithoutId(itemToReplace);
             }
+
+            await dataContext.SaveChangesAsync();
         }
 
-        public bool Delete(int ID)
+        public async Task<bool> DeleteAsync(int ID)
         {
             var itemToDelete = dataContext.DBHomeTaskFile.FirstOrDefault(i => i.ID == ID);
 
             if (itemToDelete != null)
             {
                 dataContext.DBHomeTaskFile.Remove(itemToDelete);
+                await dataContext.SaveChangesAsync();
                 return true;
             }
+
             return false;
         }
     }

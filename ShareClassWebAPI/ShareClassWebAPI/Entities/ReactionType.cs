@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ShareClassWebAPI.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 namespace ShareClassWebAPI.Entities
 {
     [Table("ReactionType")]
-    public class ReactionType
+    public class ReactionType : IEntity<ReactionType>
     {
         public ReactionType()
         {
@@ -22,5 +23,10 @@ namespace ShareClassWebAPI.Entities
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Reaction> Reaction { get; set; }
+
+        public void CopyPropertiesWithoutId(ReactionType reactionType)
+        {
+            reactionType.Name = this.Name;
+        }
     }
 }

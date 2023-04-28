@@ -8,10 +8,10 @@ namespace ShareClassWebAPI.Interfaces
 {
     public interface IRepository<T> where T : class
     {
-        List<T> GetList();
-        T GetItem(int ID);
-        int Create(T item);
-        void Update(T item);
-        bool Delete(int ID);
+        Task<List<T>> GetListAsync();
+        Task<T> GetItemAsync(int ID);
+        Task CreateAsync(T item);
+        Task UpdateAsync(T item);
+        Task<bool> DeleteAsync(int ID);
     }
 }

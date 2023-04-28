@@ -1,4 +1,5 @@
-﻿using ShareClassWebAPI.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using ShareClassWebAPI.Entities;
 using ShareClassWebAPI.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -11,57 +12,51 @@ namespace ShareClassWebAPI.Repository
     public class ReactionRepository : IRepository<Reaction>
     {
         private DataContext dataContext;
-        private int maxID;
 
         public ReactionRepository(DataContext dataContext)
         {
             this.dataContext = dataContext;
-
-            var list = GetList();
-
-            maxID = 0;
-            foreach (var item in list)
-            {
-                maxID = Math.Max(maxID, item.ID);
-            }
         }
 
-        public List<Reaction> GetList()
+        public async Task<List<Reaction>> GetListAsync()
         {
-            return dataContext.DBReaction.ToList();
+            return await dataContext.DBReaction.ToListAsync();
         }
 
-        public Reaction GetItem(int ID)
+        public async Task<Reaction> GetItemAsync(int ID)
         {
-            return dataContext.DBReaction.FirstOrDefault(i => i.ID == ID);
+            return await dataContext.DBReaction.FirstOrDefaultAsync(i => i.ID == ID);
         }
 
-        public int Create(Reaction classRoom)
+        public async Task CreateAsync(Reaction reaction)
         {
-            classRoom.ID = ++maxID;
-            dataContext.DBReaction.Add(classRoom);
-            return maxID;
+            await dataContext.DBReaction.AddAsync(reaction);
+            await dataContext.SaveChangesAsync();
         }
 
-        public void Update(Reaction classRoom)
+        public async Task UpdateAsync(Reaction reaction)
         {
-            var itemToReplace = dataContext.DBReaction.FirstOrDefault(i => i.ID == classRoom.ID);
+            var itemToReplace = dataContext.DBReaction.FirstOrDefault(i => i.ID == reaction.ID);
 
             if (itemToReplace != null)
             {
-                itemToReplace = classRoom;
+                reaction.CopyPropertiesWithoutId(itemToReplace);
             }
+
+            await dataContext.SaveChangesAsync();
         }
 
-        public bool Delete(int ID)
+        public async Task<bool> DeleteAsync(int ID)
         {
             var itemToDelete = dataContext.DBReaction.FirstOrDefault(i => i.ID == ID);
 
             if (itemToDelete != null)
             {
                 dataContext.DBReaction.Remove(itemToDelete);
+                await dataContext.SaveChangesAsync();
                 return true;
             }
+
             return false;
         }
     }

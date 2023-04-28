@@ -1,4 +1,5 @@
-﻿using ShareClassWebAPI.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using ShareClassWebAPI.Entities;
 using ShareClassWebAPI.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -11,57 +12,51 @@ namespace ShareClassWebAPI.Repository
     public class ClassRoomsUsersRepository : IRepository<ClassRoomsUsers>
     {
         private DataContext dataContext;
-        private int maxID;
 
         public ClassRoomsUsersRepository(DataContext dataContext)
         {
             this.dataContext = dataContext;
-
-            var list = GetList();
-
-            maxID = 0;
-            foreach (var item in list)
-            {
-                maxID = Math.Max(maxID, item.ID);
-            }
         }
 
-        public List<ClassRoomsUsers> GetList()
+        public async Task<List<ClassRoomsUsers>> GetListAsync()
         {
-            return dataContext.DBClassRoomsUsers.ToList();
+            return await dataContext.DBClassRoomsUsers.ToListAsync();
         }
 
-        public ClassRoomsUsers GetItem(int ID)
+        public async Task<ClassRoomsUsers> GetItemAsync(int ID)
         {
-            return dataContext.DBClassRoomsUsers.FirstOrDefault(i => i.ID == ID);
+            return await dataContext.DBClassRoomsUsers.FirstOrDefaultAsync(i => i.ID == ID);
         }
 
-        public int Create(ClassRoomsUsers ClassRoomsUsers)
+        public async Task CreateAsync(ClassRoomsUsers classRoomsUsers)
         {
-            ClassRoomsUsers.ID = ++maxID;
-            dataContext.DBClassRoomsUsers.Add(ClassRoomsUsers);
-            return maxID;
+            await dataContext.DBClassRoomsUsers.AddAsync(classRoomsUsers);
+            await dataContext.SaveChangesAsync();
         }
 
-        public void Update(ClassRoomsUsers ClassRoomsUsers)
+        public async Task UpdateAsync(ClassRoomsUsers classRoomsUsers)
         {
-            var itemToReplace = dataContext.DBClassRoomsUsers.FirstOrDefault(i => i.ID == ClassRoomsUsers.ID);
+            var itemToReplace = dataContext.DBClassRoomsUsers.FirstOrDefault(i => i.ID == classRoomsUsers.ID);
 
             if (itemToReplace != null)
             {
-                itemToReplace = ClassRoomsUsers;
+                classRoomsUsers.CopyPropertiesWithoutId(itemToReplace);
             }
+
+            await dataContext.SaveChangesAsync();
         }
 
-        public bool Delete(int ID)
+        public async Task<bool> DeleteAsync(int ID)
         {
             var itemToDelete = dataContext.DBClassRoomsUsers.FirstOrDefault(i => i.ID == ID);
 
             if (itemToDelete != null)
             {
                 dataContext.DBClassRoomsUsers.Remove(itemToDelete);
+                await dataContext.SaveChangesAsync();
                 return true;
             }
+
             return false;
         }
     }

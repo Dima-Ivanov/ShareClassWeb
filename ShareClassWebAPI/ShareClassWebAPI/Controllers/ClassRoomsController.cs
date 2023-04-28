@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ using ShareClassWebAPI.Entities;
 namespace ShareClassWebAPI.Controllers
 {
     [Route("api/ClassRooms")]
+    [EnableCors]
     [ApiController]
     public class ClassRoomsController : Controller
     {
@@ -19,9 +21,10 @@ namespace ShareClassWebAPI.Controllers
         public ClassRoomsController(DataContext context)
         {
             _context = context;
-            if (context.ClassRooms.GetList().Count() == 0)
+
+            if (context.ClassRooms.GetListAsync().Result.Count == 0)
             {
-                context.ClassRooms.Create(new ClassRoom
+                context.ClassRooms.CreateAsync(new ClassRoom
                 {
                     Name = "Maths",
                     Description = "We share maths here",
@@ -30,7 +33,6 @@ namespace ShareClassWebAPI.Controllers
                     InvitationCode = Guid.NewGuid(),
                     Students_Count = 0
                 });
-                context.SaveChanges();
             }
         }
 
@@ -49,7 +51,7 @@ namespace ShareClassWebAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            var classRoom = await _context.DBClassRoom.SingleOrDefaultAsync(c => c.ID == id);
+            var classRoom = await _context.ClassRooms.GetItemAsync(id);
 
             if (classRoom == null)
             {
@@ -67,11 +69,19 @@ namespace ShareClassWebAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            int newId = _context.ClassRooms.Create(classRoom);
+            if (classRoom.InvitationCode == Guid.Empty)
+            {
+                classRoom.InvitationCode = Guid.NewGuid();
+            }
 
-            await _context.SaveChangesAsync();
+            if (classRoom.Creation_Date == DateTime.MinValue)
+            {
+                classRoom.Creation_Date = DateTime.Now;
+            }
 
-            return CreatedAtAction("GetClassRoom", new { id = newId }, classRoom);
+            await _context.ClassRooms.CreateAsync(classRoom);
+
+            return CreatedAtAction("GetClassRoom", new { id = classRoom.ID }, classRoom);
         }
 
         [HttpPut("{id}")]
@@ -82,18 +92,16 @@ namespace ShareClassWebAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            var toUpdate = await _context.DBClassRoom.SingleOrDefaultAsync(c => c.ID == id);
+            var toUpdateAsync = await _context.ClassRooms.GetItemAsync(id);
 
-            if (toUpdate == null)
+            if (toUpdateAsync == null)
             {
                 return NotFound();
             }
 
             classRoom.ID = id;
 
-            _context.ClassRooms.Update(classRoom);
-
-            await _context.SaveChangesAsync();
+            await _context.ClassRooms.UpdateAsync(classRoom);
 
             return NoContent();
         }
@@ -106,9 +114,10 @@ namespace ShareClassWebAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            if (_context.ClassRooms.Delete(id))
+            var deleteResult = await _context.ClassRooms.DeleteAsync(id);
+
+            if (deleteResult)
             {
-                await _context.SaveChangesAsync();
                 return NoContent();
             }
 

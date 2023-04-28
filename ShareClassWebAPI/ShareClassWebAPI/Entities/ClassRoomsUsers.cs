@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ShareClassWebAPI.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -9,15 +10,20 @@ using System.Threading.Tasks;
 namespace ShareClassWebAPI.Entities
 {
     [Table("ClassRoomsUsers")]
-    public class ClassRoomsUsers
+    public class ClassRoomsUsers : IEntity<ClassRoomsUsers>
     {
         [Key]
         public int ID { get; set; }
-        public int User_ID { get; set; }
-        public int ClassRoom_ID { get; set; }
         public byte Status { get; set; }
 
         public virtual ClassRoom ClassRoom { get; set; }
         public virtual User User { get; set; }
+
+        public void CopyPropertiesWithoutId(ClassRoomsUsers classRoomsUsers)
+        {
+            classRoomsUsers.Status = this.Status;
+            classRoomsUsers.ClassRoom = this.ClassRoom;
+            classRoomsUsers.User = this.User;
+        }
     }
 }

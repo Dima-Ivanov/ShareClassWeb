@@ -1,4 +1,5 @@
-﻿using ShareClassWebAPI.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using ShareClassWebAPI.Entities;
 using ShareClassWebAPI.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -11,57 +12,51 @@ namespace ShareClassWebAPI.Repository
     public class HomeTaskRepository : IRepository<HomeTask>
     {
         private DataContext dataContext;
-        private int maxID;
 
         public HomeTaskRepository(DataContext dataContext)
         {
             this.dataContext = dataContext;
-
-            var list = GetList();
-
-            maxID = 0;
-            foreach (var item in list)
-            {
-                maxID = Math.Max(maxID, item.ID);
-            }
         }
 
-        public List<HomeTask> GetList()
+        public async Task<List<HomeTask>> GetListAsync()
         {
-            return dataContext.DBHomeTask.ToList();
+            return await dataContext.DBHomeTask.ToListAsync();
         }
 
-        public HomeTask GetItem(int ID)
+        public async Task<HomeTask> GetItemAsync(int ID)
         {
-            return dataContext.DBHomeTask.FirstOrDefault(i => i.ID == ID);
+            return await dataContext.DBHomeTask.FirstOrDefaultAsync(i => i.ID == ID);
         }
 
-        public int Create(HomeTask classRoom)
+        public async Task CreateAsync(HomeTask homeTask)
         {
-            classRoom.ID = ++maxID;
-            dataContext.DBHomeTask.Add(classRoom);
-            return maxID;
+            await dataContext.DBHomeTask.AddAsync(homeTask);
+            await dataContext.SaveChangesAsync();
         }
 
-        public void Update(HomeTask classRoom)
+        public async Task UpdateAsync(HomeTask homeTask)
         {
-            var itemToReplace = dataContext.DBHomeTask.FirstOrDefault(i => i.ID == classRoom.ID);
+            var itemToReplace = dataContext.DBHomeTask.FirstOrDefault(i => i.ID == homeTask.ID);
 
             if (itemToReplace != null)
             {
-                itemToReplace = classRoom;
+                homeTask.CopyPropertiesWithoutId(itemToReplace);
             }
+
+            await dataContext.SaveChangesAsync();
         }
 
-        public bool Delete(int ID)
+        public async Task<bool> DeleteAsync(int ID)
         {
             var itemToDelete = dataContext.DBHomeTask.FirstOrDefault(i => i.ID == ID);
 
             if (itemToDelete != null)
             {
                 dataContext.DBHomeTask.Remove(itemToDelete);
+                await dataContext.SaveChangesAsync();
                 return true;
             }
+
             return false;
         }
     }

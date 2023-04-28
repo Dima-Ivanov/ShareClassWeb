@@ -39,10 +39,8 @@ namespace ShareClassWebAPI
 
                 foreach (var classRoom in classRooms)
                 {
-                    dataContext.DBClassRoom.Add(classRoom);
+                    await dataContext.ClassRooms.CreateAsync(classRoom);
                 }
-
-                await dataContext.SaveChangesAsync();
 
                 var homeTasks = new HomeTask[]
                 {
@@ -52,16 +50,14 @@ namespace ShareClassWebAPI
                         Description = "do this this and this",
                         Creation_Date = DateTime.Now,
                         Deadline_Date = DateTime.MaxValue,
-                        ClassRoom = dataContext.DBClassRoom.First(classRoom => classRoom.Name == classRoom.Name)
+                        ClassRoom = classRooms[0]
                     }
                 };
 
                 foreach (var homeTask in homeTasks)
                 {
-                    dataContext.DBHomeTask.Add(homeTask);
+                    await dataContext.HomeTasks.CreateAsync(homeTask);
                 }
-
-                await dataContext.SaveChangesAsync();
             }
             catch
             {

@@ -1,4 +1,5 @@
-﻿using ShareClassWebAPI.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using ShareClassWebAPI.Entities;
 using ShareClassWebAPI.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -11,39 +12,29 @@ namespace ShareClassWebAPI.Repository
     public class ClassRoomRepository : IRepository<ClassRoom>
     {
         private DataContext dataContext;
-        private int maxID;
 
         public ClassRoomRepository(DataContext dataContext)
         {
             this.dataContext = dataContext;
-
-            var list = GetList();
-
-            maxID = 0;
-            foreach (var item in list)
-            {
-                maxID = Math.Max(maxID, item.ID);
-            }
         }
 
-        public List<ClassRoom> GetList()
+        public async Task<List<ClassRoom>> GetListAsync()
         {
-            return dataContext.DBClassRoom.ToList();
+            return await dataContext.DBClassRoom.ToListAsync();
         }
 
-        public ClassRoom GetItem(int ID)
+        public async Task<ClassRoom> GetItemAsync(int ID)
         {
-            return dataContext.DBClassRoom.FirstOrDefault(i => i.ID == ID);
+            return await dataContext.DBClassRoom.FirstOrDefaultAsync(i => i.ID == ID);
         }
 
-        public int Create(ClassRoom classRoom)
+        public async Task CreateAsync(ClassRoom classRoom)
         {
-            classRoom.ID = ++maxID;
-            dataContext.DBClassRoom.Add(classRoom);
-            return maxID;
+            await dataContext.DBClassRoom.AddAsync(classRoom);
+            await dataContext.SaveChangesAsync();
         }
 
-        public void Update(ClassRoom classRoom)
+        public async Task UpdateAsync(ClassRoom classRoom)
         {
             var itemToReplace = dataContext.DBClassRoom.FirstOrDefault(i => i.ID == classRoom.ID);
 
@@ -57,17 +48,21 @@ namespace ShareClassWebAPI.Repository
                 itemToReplace.Creation_Date = classRoom.Creation_Date;
                 itemToReplace.Administrator_ID = classRoom.Administrator_ID;
             }
+
+            await dataContext.SaveChangesAsync();
         }
 
-        public bool Delete(int ID)
+        public async Task<bool> DeleteAsync(int ID)
         {
             var itemToDelete = dataContext.DBClassRoom.FirstOrDefault(i => i.ID == ID);
 
             if (itemToDelete != null)
             {
                 dataContext.DBClassRoom.Remove(itemToDelete);
+                await dataContext.SaveChangesAsync();
                 return true;
             }
+
             return false;
         }
     }
