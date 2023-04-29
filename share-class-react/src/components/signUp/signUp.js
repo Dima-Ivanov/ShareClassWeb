@@ -1,29 +1,26 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Button, Form, Input } from "antd";
 
 const SignUp = ({ user, setUser }) => {
   const [errorMessages, setErrorMessages] = useState([]);
   const navigate = useNavigate();
 
-  const signUp = async (event) => {
-    event.preventDefault();
-
-    var { login, name, password, passwordConfirm } = document.forms[0];
-
+  const signUp = async (formValues) => {
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        login: login.value,
-        name: name.value,
-        password: password.value,
-        passwordConfirm: passwordConfirm.value,
+        login: formValues.login,
+        name: formValues.name,
+        password: formValues.password,
+        passwordConfirm: formValues.passwordConfirm,
       }),
     };
     return await fetch("api/Account/SignUp", requestOptions)
       .then((response) => {
         if (response.status == 200)
-          setUser({ isAuthenticated: true, userName: "" });
+          setUser({ isAuthenticated: true, userName: "", userRole: "" });
 
         return response.json();
       })
@@ -34,7 +31,11 @@ const SignUp = ({ user, setUser }) => {
             typeof data !== "undefined" &&
             typeof data.userName !== "undefined"
           ) {
-            setUser({ isAuthenticated: true, userName: data.userName });
+            setUser({
+              isAuthenticated: true,
+              userName: data.userName,
+              userRole: data.userRole,
+            });
             navigate("/");
           }
           typeof data !== "undefined" &&
@@ -57,26 +58,64 @@ const SignUp = ({ user, setUser }) => {
       ) : (
         <>
           <h3>SignUp</h3>
-          <form onSubmit={signUp}>
-            <label>Login </label>
-            <input type="text" name="login" placeholder="Login" />
-            <br />
-            <label>Name </label>
-            <input type="text" name="name" placeholder="Name" />
-            <br />
-            <label>Password </label>
-            <input type="text" name="password" placeholder="Password" />
-            <br />
-            <label>Confirm password </label>
-            <input
-              type="text"
+
+          <Form
+            onFinish={signUp}
+            labelCol={{ span: 8 }}
+            wrapperCol={{ span: 16 }}
+            style={{ maxWidth: 600 }}
+            initialValues={{ remember: true }}
+            onFinishFailed={renderErrorMessage}
+            autoComplete="off"
+          >
+            <Form.Item
+              label="Login"
+              name="login"
+              rules={[
+                { required: true, message: "Please input your username!" },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              label="Name"
+              name="name"
+              rules={[{ required: true, message: "Please input your name!" }]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              label="Password"
+              name="password"
+              rules={[
+                { required: true, message: "Please input your password!" },
+              ]}
+            >
+              <Input.Password />
+            </Form.Item>
+
+            <Form.Item
+              label="Confirm Password"
               name="passwordConfirm"
-              placeholder="Confirm password"
-            />
-            <br />
-            <button type="submit">SignUp</button>
-          </form>
-          {renderErrorMessage()}
+              rules={[
+                { required: true, message: "Please confirm your password!" },
+              ]}
+            >
+              <Input.Password />
+            </Form.Item>
+
+            <Form.Item name="errorMessage" wrapperCol={{ offset: 8, span: 16 }}>
+              {renderErrorMessage()}
+            </Form.Item>
+
+            <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+              <Button type="primary" htmlType="submit">
+                Submit
+              </Button>
+            </Form.Item>
+          </Form>
         </>
       )}
     </>

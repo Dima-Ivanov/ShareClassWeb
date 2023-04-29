@@ -39,7 +39,7 @@ namespace ShareClassWebAPI.Controllers
                     {
                         await _userManager.AddToRoleAsync(user, Constants.userRole);
                         await _signInManager.SignInAsync(user, false);
-                        return Ok(new { message = "Добавлен новый пользователь: " + user.UserName });
+                        return Ok(new { message = "Добавлен новый пользователь: " + user.UserName, user.UserName, Constants.userRole });
                     }
                     else
                     {

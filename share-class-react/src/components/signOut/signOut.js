@@ -1,8 +1,18 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Modal } from "antd";
 
 const SignOut = ({ setUser }) => {
+  const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+
+  const showModal = () => {
+    setOpen(true);
+  };
+
+  useEffect(() => {
+    showModal();
+  }, []);
 
   const signOut = async (event) => {
     event.preventDefault();
@@ -20,12 +30,17 @@ const SignOut = ({ setUser }) => {
     );
   };
 
+  const handleCancel = () => {
+    console.log("Clicked cancel button");
+    setOpen(false);
+    navigate("/");
+  };
+
   return (
     <>
-      <p></p>
-      <form onSubmit={signOut}>
-        <button type="submit">SignOut</button>
-      </form>
+      <Modal title="Title" open={open} onOk={signOut} onCancel={handleCancel}>
+        <p>Are you sure to sign out?</p>
+      </Modal>
     </>
   );
 };
