@@ -37,6 +37,7 @@ namespace ShareClassWebAPI.Controllers
 
                     if (createUserResult.Succeeded)
                     {
+                        await _userManager.AddToRoleAsync(user, Constants.userRole);
                         await _signInManager.SignInAsync(user, false);
                         return Ok(new { message = "Добавлен новый пользователь: " + user.UserName });
                     }
@@ -74,6 +75,13 @@ namespace ShareClassWebAPI.Controllers
 
                     if (passwordSignInResult.Succeeded)
                     {
+                        var user = await _userManager.FindByNameAsync(signInViewModel.Login);
+                        var roles = await _userManager.GetRolesAsync(user);
+                        if (roles != null && roles.Count > 0)
+                        {
+                            var userRole = roles[0];
+                            return Ok(new { message = "Выполнен вход", userName = signInViewModel.Login, userRole });
+                        }
                         return Ok(new { message = "Выполнен вход", userName = signInViewModel.Login });
                     }
                     else
@@ -121,6 +129,12 @@ namespace ShareClassWebAPI.Controllers
                 return Unauthorized(new { message = "Вход не выполнен" });
             }
 
+            var roles = await _userManager.GetRolesAsync(curentUser);
+            if (roles != null && roles.Count > 0)
+            {
+                var userRole = roles[0];
+                return Ok(new { message = "Сессия активна", userName = curentUser.UserName, userRole });
+            }
             return Ok(new { message = "Сессия активна", userName = curentUser.UserName });
         }
 

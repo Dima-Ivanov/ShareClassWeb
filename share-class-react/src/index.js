@@ -15,14 +15,18 @@ const App = () => {
     setClassRooms(
       classRooms.filter(({ classRoomId }) => classRoomId !== removeId)
     );
-  const [user, setUser] = useState({ isAuthenticated: false, userName: "" });
+  const [user, setUser] = useState({
+    isAuthenticated: false,
+    userName: "",
+    userRole: "",
+  });
 
   useEffect(() => {
     const getUser = async () => {
       return await fetch("api/Account/IsAuthenticated")
         .then((response) => {
           response.status === 401 &&
-            setUser({ isAuthenticated: false, userName: "" });
+            setUser({ isAuthenticated: false, userName: "", userRole: "" });
           return response.json();
         })
         .then(
@@ -31,7 +35,11 @@ const App = () => {
               typeof data !== "undefined" &&
               typeof data.userName !== "undefined"
             ) {
-              setUser({ isAuthenticated: true, userName: data.userName });
+              setUser({
+                isAuthenticated: true,
+                userName: data.userName,
+                userRole: data.userRole,
+              });
             }
           },
           (error) => {

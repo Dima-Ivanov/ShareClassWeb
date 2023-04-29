@@ -1,6 +1,6 @@
 ﻿using ShareClassWebAPI.Entities;
 
-namespace ShareClassWebAPI
+namespace ShareClassWebAPI.Data
 {
     public static class DataContextSeed
     {

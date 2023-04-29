@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import "./style.css";
+import { Constants } from "../../constants/constants";
 
 const ClassRoom = ({ user, classRooms, setClassRooms, removeClassRoom }) => {
   useEffect(() => {
@@ -54,7 +55,7 @@ const ClassRoom = ({ user, classRooms, setClassRooms, removeClassRoom }) => {
             {" "}
             <br />
             <strong className="ClassRoomName">{name} &emsp;</strong>
-            {user.isAuthenticated ? (
+            {user.isAuthenticated && user.userRole == Constants.adminRole ? (
               <button onClick={() => removeItem(id)}>Удалить</button>
             ) : (
               ""

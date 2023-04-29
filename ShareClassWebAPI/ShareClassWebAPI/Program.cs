@@ -3,6 +3,7 @@ using ShareClassWebAPI;
 using ShareClassWebAPI.Entities;
 using Microsoft.AspNetCore.Identity;
 using System.Text.Json.Serialization;
+using ShareClassWebAPI.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,12 +32,35 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.Configure<IdentityOptions>(options =>
 {
     // Default Password settings.
-    options.Password.RequireDigit = true;
+    options.Password.RequireDigit = false;
     options.Password.RequireLowercase = false;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
-    options.Password.RequiredLength = 6;
+    options.Password.RequiredLength = 4;
     options.Password.RequiredUniqueChars = 1;
+
+    // Default lockout settings.
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.AllowedForNewUsers = true;
+});
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.Name = "ShareClassWeb";
+    options.LoginPath = "/";
+    options.AccessDeniedPath = "/";
+    options.LogoutPath = "/";
+    options.Events.OnRedirectToLogin = context =>
+    {
+        context.Response.StatusCode = 401;
+        return Task.CompletedTask;
+    };
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        context.Response.StatusCode = 401;
+        return Task.CompletedTask;
+    };
 });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -48,6 +72,7 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
     await DataContextSeed.SeedAsync(dbContext);
+    await IdentitySeed.CreateUserRoles(scope.ServiceProvider);
 }
 
 // Configure the HTTP request pipeline.
