@@ -39,6 +39,7 @@ const ClassRoomCreate = ({ user, addClassRoom }) => {
     };
     createClassRoom();
   };
+
   return (
     <React.Fragment>
       {user.isAuthenticated ? (
