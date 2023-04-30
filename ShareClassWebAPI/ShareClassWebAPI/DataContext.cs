@@ -21,6 +21,19 @@ namespace ShareClassWebAPI
             this._configuration = configuration;
         }
 
+        public async Task Initialize()
+        {
+            await ClassRooms.GetListAsync();
+            await ClassRoomsUsers.GetListAsync();
+            await HomeTasks.GetListAsync();
+            await HomeTaskFiles.GetListAsync();
+            await Reactions.GetListAsync();
+            await ReactionTypes.GetListAsync();
+            await Solutions.GetListAsync();
+            await SolutionFiles.GetListAsync();
+            await Users.GetListAsync();
+        }
+
         protected override void OnConfiguring(DbContextOptionsBuilder dbContextOptionsBuilder)
         {
             dbContextOptionsBuilder.UseSqlServer(this._configuration.GetConnectionString("DefaultConnection"));

@@ -15,7 +15,7 @@ const items = [
   },
 ];
 
-const Layout = ({ user, setUser, headerPlusButton }) => {
+const Layout = ({ user, signOut, headerPlusButton }) => {
   console.log(headerPlusButton);
 
   const navigate = useNavigate();
@@ -27,8 +27,7 @@ const Layout = ({ user, setUser, headerPlusButton }) => {
 
     return await fetch("api/Account/SignOut", requestOptions).then(
       (response) => {
-        response.status === 200 &&
-          setUser({ isAuthenticated: false, userName: "" });
+        response.status === 200 && signOut();
 
         if (response.status == 401) navigate("/SignIn");
       }

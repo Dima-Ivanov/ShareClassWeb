@@ -14,14 +14,12 @@ namespace ShareClassWebAPI.Entities
     {
         [Key]
         public int ID { get; set; }
-        public byte Status { get; set; }
 
         public virtual ClassRoom ClassRoom { get; set; }
         public virtual User User { get; set; }
 
         public void CopyPropertiesWithoutId(ClassRoomsUsers classRoomsUsers)
         {
-            classRoomsUsers.Status = this.Status;
             classRoomsUsers.ClassRoom = this.ClassRoom;
             classRoomsUsers.User = this.User;
         }

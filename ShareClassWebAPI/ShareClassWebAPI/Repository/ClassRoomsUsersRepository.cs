@@ -20,7 +20,7 @@ namespace ShareClassWebAPI.Repository
 
         public async Task<List<ClassRoomsUsers>> GetListAsync()
         {
-            return await dataContext.DBClassRoomsUsers.ToListAsync();
+            return await dataContext.DBClassRoomsUsers.Include(i => i.ClassRoom).Include(i => i.User).ToListAsync();
         }
 
         public async Task<ClassRoomsUsers> GetItemAsync(int ID)

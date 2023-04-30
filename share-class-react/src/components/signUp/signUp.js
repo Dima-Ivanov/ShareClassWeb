@@ -35,6 +35,7 @@ const SignUp = ({ user, setUser }) => {
               isAuthenticated: true,
               userName: data.userName,
               userRole: data.userRole,
+              userId: data.userId,
             });
             navigate("/");
           }

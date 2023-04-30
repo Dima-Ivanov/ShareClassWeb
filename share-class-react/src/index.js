@@ -9,15 +9,25 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 const App = () => {
   const [classRooms, setClassRooms] = useState([]);
-  const removeClassRoom = (removeId) =>
-    setClassRooms(
-      classRooms.filter(({ classRoomId }) => classRoomId !== removeId)
+  const removeClassRoom = (removeId) => {
+    setClassRooms((prevClassRooms) =>
+      prevClassRooms.filter(({ id }) => id !== removeId)
     );
+  };
+  const addClassRoom = (classRoom) => {
+    setClassRooms((prevClassRooms) => [...prevClassRooms, classRoom]);
+  };
+
   const [user, setUser] = useState({
     isAuthenticated: false,
     userName: "",
     userRole: "",
+    userId: 0,
   });
+  const signOut = () => {
+    setUser({ isAuthenticated: false, userName: "", userRole: "", userId: 0 });
+    setClassRooms([]);
+  };
 
   const [headerPlusButton, setHeaderPlusButton] = useState({
     button: "",
@@ -28,7 +38,12 @@ const App = () => {
       return await fetch("api/Account/IsAuthenticated")
         .then((response) => {
           response.status === 401 &&
-            setUser({ isAuthenticated: false, userName: "", userRole: "" });
+            setUser({
+              isAuthenticated: false,
+              userName: "",
+              userRole: "",
+              userId: 0,
+            });
           return response.json();
         })
         .then(
@@ -41,6 +56,7 @@ const App = () => {
                 isAuthenticated: true,
                 userName: data.userName,
                 userRole: data.userRole,
+                userId: data.userId,
               });
             }
           },
@@ -60,7 +76,7 @@ const App = () => {
           element={
             <Layout
               user={user}
-              setUser={setUser}
+              signOut={signOut}
               headerPlusButton={headerPlusButton}
             />
           }
@@ -77,6 +93,7 @@ const App = () => {
                 classRooms={classRooms}
                 setClassRooms={setClassRooms}
                 removeClassRoom={removeClassRoom}
+                addClassRoom={addClassRoom}
                 setHeaderPlusButton={setHeaderPlusButton}
               />
             }

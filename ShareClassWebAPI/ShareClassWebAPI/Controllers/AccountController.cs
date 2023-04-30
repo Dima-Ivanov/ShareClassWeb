@@ -39,7 +39,7 @@ namespace ShareClassWebAPI.Controllers
                     {
                         await _userManager.AddToRoleAsync(user, Constants.userRole);
                         await _signInManager.SignInAsync(user, false);
-                        return Ok(new { message = "Добавлен новый пользователь: " + user.UserName, user.UserName, Constants.userRole });
+                        return Ok(new { message = "Добавлен новый пользователь: " + user.UserName, userName = user.UserName, Constants.userRole, userId = user.Id });
                     }
                     else
                     {
@@ -59,7 +59,7 @@ namespace ShareClassWebAPI.Controllers
                     message = "Неверные входные данные",
                     error = ModelState.Values.SelectMany(e => e.Errors.Select(er => er.ErrorMessage))
                 };
-                return Created("", errorMsg);
+                return Conflict(errorMsg);
             }
         }
 
@@ -80,9 +80,9 @@ namespace ShareClassWebAPI.Controllers
                         if (roles != null && roles.Count > 0)
                         {
                             var userRole = roles[0];
-                            return Ok(new { message = "Выполнен вход", userName = signInViewModel.Login, userRole });
+                            return Ok(new { message = "Выполнен вход", userName = signInViewModel.Login, userRole, userId = user.Id });
                         }
-                        return Ok(new { message = "Выполнен вход", userName = signInViewModel.Login });
+                        return Ok(new { message = "Выполнен вход", userName = signInViewModel.Login, userId = user.Id });
                     }
                     else
                     {
@@ -99,7 +99,7 @@ namespace ShareClassWebAPI.Controllers
                     message = "Вход не выполнен",
                     error = ModelState.Values.SelectMany(e => e.Errors.Select(er => er.ErrorMessage))
                 };
-                return Created("", errorMsg);
+                return Conflict(errorMsg);
             }
         }
 
@@ -107,7 +107,7 @@ namespace ShareClassWebAPI.Controllers
         [Route("api/Account/SignOut")]
         public new async Task<IActionResult> SignOut()
         {
-            User curentUser = await GetCurrentUserAsync();
+            User curentUser = await _userManager.GetUserAsync(HttpContext.User);
 
             if (curentUser == null)
             {
@@ -122,7 +122,7 @@ namespace ShareClassWebAPI.Controllers
         [Route("api/Account/IsAuthenticated")]
         public async Task<IActionResult> IsAuthenticated()
         {
-            User curentUser = await GetCurrentUserAsync();
+            User curentUser = await _userManager.GetUserAsync(HttpContext.User);
 
             if (curentUser == null)
             {
@@ -133,11 +133,9 @@ namespace ShareClassWebAPI.Controllers
             if (roles != null && roles.Count > 0)
             {
                 var userRole = roles[0];
-                return Ok(new { message = "Сессия активна", userName = curentUser.UserName, userRole });
+                return Ok(new { message = "Сессия активна", userName = curentUser.UserName, userRole, userId = curentUser.Id });
             }
             return Ok(new { message = "Сессия активна", userName = curentUser.UserName });
         }
-
-        private Task<User> GetCurrentUserAsync() => _userManager.GetUserAsync(HttpContext.User);
     }
 }

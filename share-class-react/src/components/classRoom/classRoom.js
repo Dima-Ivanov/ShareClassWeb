@@ -6,19 +6,30 @@ import trashIcon from "../../icons/trash.svg";
 import copyIcon from "../../icons/copy.svg";
 import exitIcon from "../../icons/exit.svg";
 import plusIcon from "../../icons/plus.svg";
-import { Button, Dropdown, Menu, Form, Modal, Input } from "antd";
+import {
+  Button,
+  Dropdown,
+  Menu,
+  Form,
+  Modal,
+  Input,
+  notification,
+  Popconfirm,
+} from "antd";
 
 const ClassRoom = ({
   user,
   classRooms,
   setClassRooms,
   removeClassRoom,
+  addClassRoom,
   setHeaderPlusButton,
 }) => {
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [isJoinModalVisible, setIsJoinModalVisible] = useState(false);
   const [createClassRoomForm] = Form.useForm();
   const [joinClassRoomForm] = Form.useForm();
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   useEffect(() => {
     const getClassRooms = async () => {
@@ -60,17 +71,40 @@ const ClassRoom = ({
 
   const copyInvitationCode = async (invitationCode) => {
     await navigator.clipboard.writeText(invitationCode);
+    notification.open({
+      message: "Invitation code copied!",
+      description: invitationCode,
+      duration: 1,
+    });
   };
 
   const leaveClassRoom = async (classRoomId) => {
     const requestOptions = {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
     };
 
-    return await fetch(`api/ClassRooms/${classRoomId}`, requestOptions).then(
-      (response) => {
+    const response = await fetch(
+      `api/ClassRooms/Leave/${classRoomId}`,
+      requestOptions
+    );
+
+    await response.json().then(
+      (data) => {
+        console.log("Data: ", data);
+
         if (response.ok) {
-          removeClassRoom(classRoomId);
+          removeClassRoom(data);
+          notification.info({
+            message: "Success",
+            description: "Left ClassRoom: " + data.name,
+            duration: 2,
+          });
+        } else {
+          notification.error({
+            message: "Error",
+            description: data.message,
+          });
         }
       },
       (error) => console.log(error)
@@ -107,8 +141,42 @@ const ClassRoom = ({
   const handleCreateClassRoom = async () => {
     try {
       const values = await createClassRoomForm.validateFields();
-      console.log(values);
-      // TODO создание нового класс-рума
+
+      const classRoom = {
+        name: values.name,
+        description: values.description,
+        teacher_Name: values.teacher_Name,
+      };
+
+      const requestOptions = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(classRoom),
+      };
+
+      const response = await fetch("api/ClassRooms", requestOptions);
+
+      await response.json().then(
+        (data) => {
+          console.log("Data: ", data);
+
+          if (response.ok) {
+            addClassRoom(data);
+            notification.info({
+              message: "Success",
+              description: "Created ClassRoom: " + data.name,
+              duration: 2,
+            });
+          } else {
+            notification.error({
+              message: "Error",
+              description: data.message,
+            });
+          }
+        },
+        (error) => console.log(error)
+      );
+
       setIsCreateModalVisible(false);
       createClassRoomForm.resetFields();
     } catch (error) {
@@ -173,8 +241,38 @@ const ClassRoom = ({
   const handleJoinClassRoom = async () => {
     try {
       const values = await joinClassRoomForm.validateFields();
-      console.log(values);
-      // TODO создание нового класс-рума
+
+      const requestOptions = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      };
+
+      const response = await fetch(
+        "api/ClassRooms/Join/" + values.invitationCode,
+        requestOptions
+      );
+
+      await response.json().then(
+        (data) => {
+          console.log("Joined classroom: ", data);
+
+          if (response.ok) {
+            addClassRoom(data);
+            notification.info({
+              message: "Success",
+              description: "Joined ClassRoom: " + data.name,
+              duration: 2,
+            });
+          } else {
+            notification.error({
+              message: "Error",
+              description: data.message,
+            });
+          }
+        },
+        (error) => console.log(error)
+      );
+
       setIsJoinModalVisible(false);
       joinClassRoomForm.resetFields();
     } catch (error) {
@@ -237,47 +335,65 @@ const ClassRoom = ({
       {joinClassRoomModal}
       <div className="mainContainer">
         <div className="classRoomsContainer">
-          {classRooms.map(({ id, name, invitationCode, teacher_Name }) => (
-            <div className="classRoom" key={id} id={id}>
-              <div>
-                <Link to={`/ClassRoom/${id}`} className="classRoomName">
-                  <strong>{name}</strong>
-                </Link>
-                <p className="classRoomTeacher">{teacher_Name}</p>
-              </div>
+          {classRooms.map(
+            ({ id, name, invitationCode, teacher_Name, administrator_ID }) => (
+              <div className="classRoom" key={id} id={id}>
+                <div>
+                  <Link to={`/ClassRoom/${id}`} className="classRoomName">
+                    <strong>{name}</strong>
+                  </Link>
+                  <p className="classRoomTeacher">{teacher_Name}</p>
+                </div>
 
-              <div className="classRoomButtons">
-                <button
-                  className="copyInvitationCodeButton"
-                  onClick={() => copyInvitationCode(invitationCode)}
-                  title="Copy Invitation Code"
-                >
-                  <img src={copyIcon} alt="Copy Invitation Code"></img>
-                </button>
-
-                <button
-                  className="leaveClassRoomButton"
-                  onClick={() => leaveClassRoom(id)}
-                  title="Leave ClassRoom"
-                >
-                  <img src={exitIcon} alt="Leave ClassRoom"></img>
-                </button>
-
-                {user.isAuthenticated &&
-                user.userRole == Constants.adminRole ? (
+                <div className="classRoomButtons">
                   <button
-                    className="deleteClassRoomButton"
-                    onClick={() => deleteClassRoom(id)}
-                    title="Delete ClassRoom"
+                    className="copyInvitationCodeButton"
+                    onClick={() => copyInvitationCode(invitationCode)}
+                    title="Copy Invitation Code"
                   >
-                    <img src={trashIcon} alt="Delete ClassRoom"></img>
+                    <img src={copyIcon} alt="Copy Invitation Code"></img>
                   </button>
-                ) : (
-                  ""
-                )}
+
+                  {user.userId != administrator_ID ? (
+                    <button
+                      className="leaveClassRoomButton"
+                      onClick={() => leaveClassRoom(id)}
+                      title="Leave ClassRoom"
+                    >
+                      <img src={exitIcon} alt="Leave ClassRoom"></img>
+                    </button>
+                  ) : (
+                    ""
+                  )}
+
+                  {user.isAuthenticated &&
+                  (user.userRole == Constants.adminRole ||
+                    user.userId == administrator_ID) ? (
+                    <Popconfirm
+                      title="Are you sure you want to delete this class?" // TODO показывается для всех класс-румов
+                      open={isDeleteConfirmOpen}
+                      onConfirm={() => {
+                        deleteClassRoom(id);
+                        setIsDeleteConfirmOpen(false);
+                      }}
+                      onCancel={() => setIsDeleteConfirmOpen(false)}
+                      okText="Yes"
+                      cancelText="No"
+                    >
+                      <button
+                        className="deleteClassRoomButton"
+                        onClick={() => setIsDeleteConfirmOpen(true)}
+                      >
+                        <img src={trashIcon} alt="Delete ClassRoom"></img>
+                      </button>
+                    </Popconfirm>
+                  ) : (
+                    ""
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          )}
         </div>
       </div>
     </React.Fragment>

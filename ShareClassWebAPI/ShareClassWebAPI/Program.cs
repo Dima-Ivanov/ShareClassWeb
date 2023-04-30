@@ -71,7 +71,9 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
-    await DataContextSeed.SeedAsync(dbContext);
+    dbContext.Database.EnsureCreated();
+    await dbContext.Initialize();
+    //await DataContextSeed.SeedAsync(dbContext);
     await IdentitySeed.CreateUserRoles(scope.ServiceProvider);
 }
 
