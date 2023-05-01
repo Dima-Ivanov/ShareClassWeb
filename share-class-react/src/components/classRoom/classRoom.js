@@ -352,10 +352,35 @@ const ClassRoom = ({
                 }) => (
                   <div className="classRoom" key={id} id={id}>
                     <div>
-                      <Link to={`/ClassRoom/${id}`} className="classRoomName">
-                        <strong>{name}</strong>
+                      <Link to={`/HomeTask/${id}`} className="classRoomName">
+                        <strong
+                          style={{
+                            maxWidth: "100%",
+                            height: "auto",
+                            overflow: "hidden",
+                            whiteSpace: "nowrap",
+                            textOverflow: "ellipsis",
+                            display: "inline-block",
+                          }}
+                        >
+                          {name}
+                        </strong>
                       </Link>
-                      <p className="classRoomTeacher">{teacher_Name}</p>
+                      <div>
+                        <p
+                          className="classRoomTeacher"
+                          style={{
+                            maxWidth: "100%",
+                            height: "auto",
+                            overflow: "hidden",
+                            whiteSpace: "nowrap",
+                            textOverflow: "ellipsis",
+                            display: "inline-block",
+                          }}
+                        >
+                          {teacher_Name}
+                        </p>
+                      </div>
                     </div>
 
                     <div className="classRoomButtons">

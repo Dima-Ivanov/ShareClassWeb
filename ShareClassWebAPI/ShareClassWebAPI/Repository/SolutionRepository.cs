@@ -20,7 +20,7 @@ namespace ShareClassWebAPI.Repository
 
         public async Task<List<Solution>> GetListAsync()
         {
-            return await dataContext.DBSolution.ToListAsync();
+            return await dataContext.DBSolution.Include(i => i.HomeTask).Include(i => i.Reaction).Include(i => i.SolutionFile).ToListAsync();
         }
 
         public async Task<Solution> GetItemAsync(int ID)

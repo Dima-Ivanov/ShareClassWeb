@@ -25,7 +25,7 @@ const Layout = ({ user, signOut, headerPlusButton }) => {
       method: "POST",
     };
 
-    return await fetch("api/Account/SignOut", requestOptions).then(
+    return await fetch("/api/Account/SignOut", requestOptions).then(
       (response) => {
         response.status === 200 && signOut();
 

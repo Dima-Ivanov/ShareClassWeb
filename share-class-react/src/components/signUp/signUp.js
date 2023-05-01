@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Form, Input } from "antd";
+import { Button, Form, Input, notification } from "antd";
 
 const SignUp = ({ user, setUser }) => {
   const [errorMessages, setErrorMessages] = useState([]);
@@ -17,7 +17,7 @@ const SignUp = ({ user, setUser }) => {
         passwordConfirm: formValues.passwordConfirm,
       }),
     };
-    return await fetch("api/Account/SignUp", requestOptions)
+    return await fetch("/api/Account/SignUp", requestOptions)
       .then((response) => {
         if (response.status == 200)
           setUser({ isAuthenticated: true, userName: "", userRole: "" });
@@ -38,6 +38,11 @@ const SignUp = ({ user, setUser }) => {
               userId: data.userId,
             });
             navigate("/");
+          } else {
+            notification.error({
+              message: "Error",
+              description: data.message,
+            });
           }
           typeof data !== "undefined" &&
             typeof data.error !== "undefined" &&

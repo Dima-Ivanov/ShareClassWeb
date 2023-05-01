@@ -6,6 +6,7 @@ import SignIn from "./components/signIn/signIn";
 import SignUp from "./components/signUp/signUp";
 import Home from "./components/home/home";
 import HomeTask from "./components/homeTask/homeTask";
+import Solution from "./components/solution/solution";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 const App = () => {
@@ -100,9 +101,15 @@ const App = () => {
             }
           />
           <Route
-            path="/ClassRoom/:id"
+            path="/HomeTask/:classRoomId"
             element={
               <HomeTask user={user} setHeaderPlusButton={setHeaderPlusButton} />
+            }
+          />
+          <Route
+            path="/Solution/:classRoomId/:homeTaskId"
+            element={
+              <Solution user={user} setHeaderPlusButton={setHeaderPlusButton} />
             }
           />
           <Route

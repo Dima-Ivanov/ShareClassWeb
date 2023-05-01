@@ -20,7 +20,7 @@ const HomeTask = ({ user, setHeaderPlusButton }) => {
   const [homeTasks, setHomeTasks] = useState([]);
   const [classRoomAdministratorId, setClassRoomAdministratorId] = useState(-1);
   const params = useParams();
-  const classRoomId = params.id;
+  const classRoomId = params.classRoomId;
 
   const removeHomeTask = (removeId) => {
     setHomeTasks((prevHomeTasks) =>
@@ -210,7 +210,7 @@ const HomeTask = ({ user, setHeaderPlusButton }) => {
             },
           ]}
         >
-          <Input />
+          <Input.TextArea autoSize={{ minRows: 3, maxRows: 6 }} />
         </Form.Item>
 
         <Form.Item
@@ -255,8 +255,22 @@ const HomeTask = ({ user, setHeaderPlusButton }) => {
           {homeTasks.map(({ id, name, deadline_Date }) => (
             <div className="homeTask" key={id} id={id}>
               <div>
-                <Link to={`/HomeTask/${id}`} className="homeTaskName">
-                  <strong>{name}</strong>
+                <Link
+                  to={`/Solution/${classRoomId}/${id}`}
+                  className="homeTaskName"
+                >
+                  <strong
+                    style={{
+                      maxWidth: "100%",
+                      height: "auto",
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                      display: "inline-block",
+                    }}
+                  >
+                    {name}
+                  </strong>
                 </Link>
                 <p className="deadlineDate">
                   Deadline date: {new Date(deadline_Date).toLocaleDateString()}

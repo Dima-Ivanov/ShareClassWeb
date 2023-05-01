@@ -16,7 +16,7 @@ const SignIn = ({ user, setUser }) => {
         rememberMe: formValues.rememberMe,
       }),
     };
-    return await fetch("api/Account/SignIn", requestOptions)
+    return await fetch("/api/Account/SignIn", requestOptions)
       .then((response) => {
         if (response.status == 200)
           setUser({ isAuthenticated: true, userName: "", userRole: "" });

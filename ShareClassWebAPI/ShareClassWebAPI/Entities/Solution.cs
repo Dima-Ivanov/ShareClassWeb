@@ -23,7 +23,7 @@ namespace ShareClassWebAPI.Entities
         public string Solution_Text { get; set; }
         public int UserID { get; set; }
 
-        public virtual HomeTask HomeTask { get; set; }
+        public virtual HomeTask? HomeTask { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Reaction> Reaction { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

@@ -33,6 +33,11 @@ namespace ShareClassWebAPI.Controllers
                         Name = signUpViewModel.Name
                     };
 
+                    if (signUpViewModel.Login.Length > 15)
+                    {
+                        throw new Exception();
+                    }
+
                     var createUserResult = await _userManager.CreateAsync(user, signUpViewModel.Password);
 
                     if (createUserResult.Succeeded)
@@ -56,7 +61,7 @@ namespace ShareClassWebAPI.Controllers
             {
                 var errorMsg = new
                 {
-                    message = "Неверные входные данные",
+                    message = "Недопустимые входные данные",
                     error = ModelState.Values.SelectMany(e => e.Errors.Select(er => er.ErrorMessage))
                 };
                 return Conflict(errorMsg);

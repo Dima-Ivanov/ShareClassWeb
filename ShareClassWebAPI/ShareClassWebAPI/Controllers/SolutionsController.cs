@@ -13,22 +13,22 @@ using ShareClassWebAPI.Entities;
 
 namespace ShareClassWebAPI.Controllers
 {
-    [Route("api/HomeTasks/{classRoomId}")]
+    [Route("api/Solutions/{classRoomId}/{homeTaskId}")]
     [EnableCors]
     [ApiController]
-    public class HomeTasksController : Controller
+    public class SolutionsController : Controller
     {
         private readonly DataContext _context;
         private readonly UserManager<User> _userManager;
 
-        public HomeTasksController(DataContext context, UserManager<User> userManager)
+        public SolutionsController(DataContext context, UserManager<User> userManager)
         {
             _context = context;
             _userManager = userManager;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromRoute] int classRoomId)
+        public async Task<IActionResult> GetAll([FromRoute] int classRoomId, [FromRoute] int homeTaskId)
         {
             User curentUser = await _userManager.GetUserAsync(HttpContext.User);
 
@@ -36,8 +36,6 @@ namespace ShareClassWebAPI.Controllers
             {
                 return Conflict(new { message = "You are not signed in!" });
             }
-
-            var homeTasks = await _context.HomeTasks.GetListAsync();
 
             var classRoomsUsers = await _context.ClassRoomsUsers.GetListAsync();
             var userInClassRoom = classRoomsUsers.FirstOrDefault(i => i.ClassRoom.ID == classRoomId && i.User.Id == curentUser.Id);
@@ -47,13 +45,44 @@ namespace ShareClassWebAPI.Controllers
                 Conflict(new { message = "You are not in this ClassRoom!" });
             }
 
-            homeTasks = homeTasks.Where(i => i.ClassRoom.ID == classRoomId).ToList();
+            var solutions = await _context.Solutions.GetListAsync();
+            solutions = solutions.Where(i => i.HomeTask.ID == homeTaskId).ToList();
+            var users = await _context.Users.GetListAsync();
 
-            return Ok(homeTasks);
+            var solutionsWithUsers = from solution in solutions
+                                     join user in users on solution.UserID equals user.Id
+                                     select new { solution = solution, userName = user.Login };
+
+            return Ok(solutionsWithUsers);
         }
 
-        [HttpGet("{homeTaskId}")]
-        public async Task<IActionResult> GetHomeTask([FromRoute] int homeTaskId)
+        [HttpGet("{solutionId}")]
+        public async Task<IActionResult> GetSolution([FromRoute] int classRoomId, [FromRoute] int homeTaskId, [FromRoute] int solutionId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            User curentUser = await _userManager.GetUserAsync(HttpContext.User);
+
+            if (curentUser == null)
+            {
+                return Conflict(new { message = "You are not signed in!" });
+            }
+
+            var solution = await _context.Solutions.GetItemAsync(solutionId);
+
+            if (solution == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(new { solution = solution, userName = curentUser.Login });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromRoute] int classRoomId, [FromRoute] int homeTaskId, [FromBody] Solution solution)
         {
             if (!ModelState.IsValid)
             {
@@ -71,77 +100,48 @@ namespace ShareClassWebAPI.Controllers
 
             if (homeTask == null)
             {
-                return NotFound();
+                return Conflict(new { message = "No HomeTask with id: " + homeTaskId });
             }
 
-            return Ok(homeTask);
+            solution.HomeTask = homeTask;
+            solution.UserID = curentUser.Id;
+
+            await _context.Solutions.CreateAsync(solution);
+
+            return CreatedAtAction("GetSolution", new { classRoomId = classRoomId, homeTaskId = homeTaskId, solutionId = solution.ID }, new { solution = solution, userName = curentUser.Login });
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromRoute] int classRoomId, [FromBody] HomeTask homeTask)
+        [HttpPut("{solutionId}")]
+        public async Task<IActionResult> Update([FromRoute] int classRoomId, [FromRoute] int homeTaskId, [FromRoute] int solutionId, [FromBody] Solution solution)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            User curentUser = await _userManager.GetUserAsync(HttpContext.User);
-
-            if (curentUser == null)
-            {
-                return Conflict(new { message = "You are not signed in!" });
-            }
-
-            if (homeTask.Creation_Date == DateTime.MinValue)
-            {
-                homeTask.Creation_Date = DateTime.Now;
-            }
-
-            var classRoom = await _context.ClassRooms.GetItemAsync(classRoomId);
-
-            if (classRoom == null)
-            {
-                return Conflict(new { message = "No ClassRoom with id: " + classRoomId });
-            }
-
-            homeTask.ClassRoom = classRoom;
-
-            await _context.HomeTasks.CreateAsync(homeTask);
-
-            return CreatedAtAction("GetHomeTask", new { classRoomId = classRoomId, homeTaskId = homeTask.ID }, homeTask);
-        }
-
-        [HttpPut("{homeTaskId}")]
-        public async Task<IActionResult> Update([FromRoute] int classRoomId, [FromRoute] int homeTaskId, [FromBody] HomeTask homeTask)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var toUpdateAsync = await _context.HomeTasks.GetItemAsync(homeTaskId);
+            var toUpdateAsync = await _context.Solutions.GetItemAsync(solutionId);
 
             if (toUpdateAsync == null)
             {
                 return NotFound();
             }
 
-            homeTask.ID = homeTaskId;
+            solution.ID = solutionId;
 
-            await _context.HomeTasks.UpdateAsync(homeTask);
+            await _context.Solutions.UpdateAsync(solution);
 
             return NoContent();
         }
 
-        [HttpDelete("{homeTaskId}")]
-        public async Task<IActionResult> Delete([FromRoute] int classRoomId, [FromRoute] int homeTaskId)
+        [HttpDelete("{solutionId}")]
+        public async Task<IActionResult> Delete([FromRoute] int classRoomId, [FromRoute] int homeTaskId, [FromRoute] int solutionId)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var deleteResult = await _context.HomeTasks.DeleteAsync(homeTaskId);
+            var deleteResult = await _context.Solutions.DeleteAsync(solutionId);
 
             if (deleteResult)
             {
