@@ -29,11 +29,12 @@ const ClassRoom = ({
   const [isJoinModalVisible, setIsJoinModalVisible] = useState(false);
   const [createClassRoomForm] = Form.useForm();
   const [joinClassRoomForm] = Form.useForm();
-  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState({});
+  const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState({});
 
   useEffect(() => {
     const getClassRooms = async () => {
-      return await fetch("api/ClassRooms", {
+      return await fetch("/api/ClassRooms", {
         method: "GET",
       })
         .then((response) => response.json())
@@ -51,15 +52,19 @@ const ClassRoom = ({
   }, [setClassRooms]);
 
   useEffect(() => {
-    setHeaderPlusButton({ button: addOrJoinClassRoomMenu });
-  }, [setHeaderPlusButton]);
+    if (user.isAuthenticated) {
+      setHeaderPlusButton({ button: addOrJoinClassRoomMenu });
+    } else {
+      setHeaderPlusButton({ button: <div></div> });
+    }
+  }, [setHeaderPlusButton, user]);
 
   const deleteClassRoom = async (classRoomId) => {
     const requestOptions = {
       method: "DELETE",
     };
 
-    return await fetch(`api/ClassRooms/${classRoomId}`, requestOptions).then(
+    return await fetch(`/api/ClassRooms/${classRoomId}`, requestOptions).then(
       (response) => {
         if (response.ok) {
           removeClassRoom(classRoomId);
@@ -85,7 +90,7 @@ const ClassRoom = ({
     };
 
     const response = await fetch(
-      `api/ClassRooms/Leave/${classRoomId}`,
+      `/api/ClassRooms/Leave/${classRoomId}`,
       requestOptions
     );
 
@@ -94,7 +99,7 @@ const ClassRoom = ({
         console.log("Data: ", data);
 
         if (response.ok) {
-          removeClassRoom(data);
+          removeClassRoom(classRoomId);
           notification.info({
             message: "Success",
             description: "Left ClassRoom: " + data.name,
@@ -154,7 +159,7 @@ const ClassRoom = ({
         body: JSON.stringify(classRoom),
       };
 
-      const response = await fetch("api/ClassRooms", requestOptions);
+      const response = await fetch("/api/ClassRooms", requestOptions);
 
       await response.json().then(
         (data) => {
@@ -248,7 +253,7 @@ const ClassRoom = ({
       };
 
       const response = await fetch(
-        "api/ClassRooms/Join/" + values.invitationCode,
+        "/api/ClassRooms/Join/" + values.invitationCode,
         requestOptions
       );
 
@@ -323,7 +328,7 @@ const ClassRoom = ({
           className="addOrJoinClassRoomButton"
           title="Add Or Join ClassRoom"
         >
-          <img src={plusIcon} alt="Leave ClassRoom"></img>
+          <img src={plusIcon} alt="Add or Join ClassRoom"></img>
         </Button>
       </Dropdown>
     </div>
@@ -331,71 +336,121 @@ const ClassRoom = ({
 
   return (
     <React.Fragment>
-      {createClassRoomModal}
-      {joinClassRoomModal}
-      <div className="mainContainer">
-        <div className="classRoomsContainer">
-          {classRooms.map(
-            ({ id, name, invitationCode, teacher_Name, administrator_ID }) => (
-              <div className="classRoom" key={id} id={id}>
-                <div>
-                  <Link to={`/ClassRoom/${id}`} className="classRoomName">
-                    <strong>{name}</strong>
-                  </Link>
-                  <p className="classRoomTeacher">{teacher_Name}</p>
-                </div>
+      {user.isAuthenticated ? (
+        <div>
+          {createClassRoomModal}
+          {joinClassRoomModal}
+          <div className="mainContainer">
+            <div className="classRoomsContainer">
+              {classRooms.map(
+                ({
+                  id,
+                  name,
+                  invitationCode,
+                  teacher_Name,
+                  administrator_ID,
+                }) => (
+                  <div className="classRoom" key={id} id={id}>
+                    <div>
+                      <Link to={`/ClassRoom/${id}`} className="classRoomName">
+                        <strong>{name}</strong>
+                      </Link>
+                      <p className="classRoomTeacher">{teacher_Name}</p>
+                    </div>
 
-                <div className="classRoomButtons">
-                  <button
-                    className="copyInvitationCodeButton"
-                    onClick={() => copyInvitationCode(invitationCode)}
-                    title="Copy Invitation Code"
-                  >
-                    <img src={copyIcon} alt="Copy Invitation Code"></img>
-                  </button>
-
-                  {user.userId != administrator_ID ? (
-                    <button
-                      className="leaveClassRoomButton"
-                      onClick={() => leaveClassRoom(id)}
-                      title="Leave ClassRoom"
-                    >
-                      <img src={exitIcon} alt="Leave ClassRoom"></img>
-                    </button>
-                  ) : (
-                    ""
-                  )}
-
-                  {user.isAuthenticated &&
-                  (user.userRole == Constants.adminRole ||
-                    user.userId == administrator_ID) ? (
-                    <Popconfirm
-                      title="Are you sure you want to delete this class?" // TODO показывается для всех класс-румов
-                      open={isDeleteConfirmOpen}
-                      onConfirm={() => {
-                        deleteClassRoom(id);
-                        setIsDeleteConfirmOpen(false);
-                      }}
-                      onCancel={() => setIsDeleteConfirmOpen(false)}
-                      okText="Yes"
-                      cancelText="No"
-                    >
+                    <div className="classRoomButtons">
                       <button
-                        className="deleteClassRoomButton"
-                        onClick={() => setIsDeleteConfirmOpen(true)}
+                        className="copyInvitationCodeButton"
+                        onClick={() => copyInvitationCode(invitationCode)}
+                        title="Copy Invitation Code"
                       >
-                        <img src={trashIcon} alt="Delete ClassRoom"></img>
+                        <img src={copyIcon} alt="Copy Invitation Code"></img>
                       </button>
-                    </Popconfirm>
-                  ) : (
-                    ""
-                  )}
-                </div>
-              </div>
-            )
-          )}
+
+                      {user.userId != administrator_ID ? (
+                        <Popconfirm
+                          title="Are you sure you want to leave this class?"
+                          open={isLeaveConfirmOpen[id]}
+                          onConfirm={() => {
+                            leaveClassRoom(id);
+                            setIsLeaveConfirmOpen((prev) => ({
+                              ...prev,
+                              [id]: false,
+                            }));
+                          }}
+                          onCancel={() =>
+                            setIsLeaveConfirmOpen((prev) => ({
+                              ...prev,
+                              [id]: false,
+                            }))
+                          }
+                          okText="Yes"
+                          cancelText="No"
+                        >
+                          <button
+                            className="leaveClassRoomButton"
+                            title="Leave ClassRoom"
+                            onClick={() =>
+                              setIsLeaveConfirmOpen((prev) => ({
+                                ...prev,
+                                [id]: true,
+                              }))
+                            }
+                          >
+                            <img src={exitIcon} alt="Leave ClassRoom"></img>
+                          </button>
+                        </Popconfirm>
+                      ) : (
+                        ""
+                      )}
+
+                      {user.userRole == Constants.adminRole ||
+                      user.userId == administrator_ID ? (
+                        <Popconfirm
+                          title="Are you sure you want to delete this class?"
+                          open={isDeleteConfirmOpen[id]}
+                          onConfirm={() => {
+                            deleteClassRoom(id);
+                            setIsDeleteConfirmOpen((prev) => ({
+                              ...prev,
+                              [id]: false,
+                            }));
+                          }}
+                          onCancel={() =>
+                            setIsDeleteConfirmOpen((prev) => ({
+                              ...prev,
+                              [id]: false,
+                            }))
+                          }
+                          okText="Yes"
+                          cancelText="No"
+                        >
+                          <button
+                            className="deleteClassRoomButton"
+                            title="Delete ClassRoom"
+                            onClick={() =>
+                              setIsDeleteConfirmOpen((prev) => ({
+                                ...prev,
+                                [id]: true,
+                              }))
+                            }
+                          >
+                            <img src={trashIcon} alt="Delete ClassRoom"></img>
+                          </button>
+                        </Popconfirm>
+                      ) : (
+                        ""
+                      )}
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        <h1>SignIn first!</h1>
+      )}
     </React.Fragment>
   );
 };

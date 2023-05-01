@@ -5,6 +5,7 @@ import Layout from "./components/layout/layout";
 import SignIn from "./components/signIn/signIn";
 import SignUp from "./components/signUp/signUp";
 import Home from "./components/home/home";
+import HomeTask from "./components/homeTask/homeTask";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 const App = () => {
@@ -35,7 +36,7 @@ const App = () => {
 
   useEffect(() => {
     const getUser = async () => {
-      return await fetch("api/Account/IsAuthenticated")
+      return await fetch("/api/Account/IsAuthenticated")
         .then((response) => {
           response.status === 401 &&
             setUser({
@@ -96,6 +97,12 @@ const App = () => {
                 addClassRoom={addClassRoom}
                 setHeaderPlusButton={setHeaderPlusButton}
               />
+            }
+          />
+          <Route
+            path="/ClassRoom/:id"
+            element={
+              <HomeTask user={user} setHeaderPlusButton={setHeaderPlusButton} />
             }
           />
           <Route

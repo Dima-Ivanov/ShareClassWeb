@@ -128,6 +128,11 @@ namespace ShareClassWebAPI.Controllers
                 return Conflict(new { message = "No ClassRoom with id: " + id });
             }
 
+            if (classRoomToLeave.Administrator_ID == curentUser.Id)
+            {
+                return Conflict(new { message = "You cannot leave because you are the administrator" });
+            }
+
             var classRoomsUsersList = await _context.ClassRoomsUsers.GetListAsync();
 
             var classRoomsUsersToDelete = classRoomsUsersList.FirstOrDefault(cru => cru.ClassRoom.ID == classRoomToLeave.ID && cru.User.Id == curentUser.Id);
@@ -144,31 +149,6 @@ namespace ShareClassWebAPI.Controllers
             await _context.ClassRooms.UpdateAsync(classRoomToLeave);
 
             return Ok(classRoomToLeave);
-        }
-
-        [HttpGet("IsAdministrator/{id}")]
-        public async Task<IActionResult> IsAdministrator([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            User curentUser = await _userManager.GetUserAsync(HttpContext.User);
-
-            if (curentUser == null)
-            {
-                return Conflict(new { message = "You are not signed in!" });
-            }
-
-            var classRoom = await _context.ClassRooms.GetItemAsync(id);
-
-            if (classRoom == null)
-            {
-                return Conflict(new { message = "No ClassRoom with id: " + id });
-            }
-
-            return Ok(new { isAdministrator = classRoom.Administrator_ID == curentUser.Id });
         }
 
         [HttpGet("{id}")]
@@ -250,7 +230,6 @@ namespace ShareClassWebAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = Constants.adminRole)]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             if (!ModelState.IsValid)

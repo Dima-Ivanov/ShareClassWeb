@@ -18,8 +18,8 @@ namespace ShareClassWebAPI.Controllers
         }
 
         [HttpPost]
-        [Route("api/Account/SignUp")]
         [AllowAnonymous]
+        [Route("api/Account/SignUp")]
         public async Task<IActionResult> SignUp([FromBody] SignUpViewModel signUpViewModel)
         {
             try
@@ -64,6 +64,7 @@ namespace ShareClassWebAPI.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [Route("api/Account/SignIn")]
         public async Task<IActionResult> SignIn([FromBody] SignInViewModel signInViewModel)
         {
@@ -119,6 +120,7 @@ namespace ShareClassWebAPI.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         [Route("api/Account/IsAuthenticated")]
         public async Task<IActionResult> IsAuthenticated()
         {
